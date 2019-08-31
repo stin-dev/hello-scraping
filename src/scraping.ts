@@ -7,6 +7,7 @@ import { entryExists, addNewEntry, getNewEntries, Entry, getEntryById } from "./
 import { endofFunction } from "./endof_function";
 import Extract from "./utils/StringExtractor";
 import { addNewImageUrl } from "./spreadsheet/imageurls";
+import { customFetch } from "./utils/customFetch";
 
 export default function executeScraping() {
 	scrapeEntrylist();
@@ -55,8 +56,7 @@ export function scrapeUnitEntryList(unit: Unit, nth = 1) {
 function scrapeBlogEntryList(blog: Blog, nth: number = 1) {
 	console.info(`[${blog.AmebaId}]のEntryListのスクレイピングを実行します。`);
 
-	const response = UrlFetchApp.fetch(blog.getEntrylistNthUrl(nth));
-	const content = response.getContentText("UTF-8");
+	const content = customFetch(blog.getEntrylistNthUrl(nth), 5);
 	const stateJson = new Parser(content).from("<script>window.INIT_DATA=").to("};", 1).build();
 
 	const entrylistState: EntryListState = JSON.parse(stateJson);
@@ -100,26 +100,7 @@ export function scrapeNewEntries() {
 function scrapeEntry(entry: Entry) {
 	console.info(`[${entry.EntryUrl}]の画像を取得します。`);
 
-	let response: GoogleAppsScript.URL_Fetch.HTTPResponse;
-	let content = "";
-	for (let i = 0; i < 5; i++) {
-		try {
-			// UrlFetchApp.fetch()でAddress unavailable errorが発生することがある。
-			// 同じURLに5回http requestを送信して全て失敗したときにプログラムを強制終了する。
-			response = UrlFetchApp.fetch(entry.EntryUrl);
-			
-			// UrlFetchApp.fetch()の仕様でOptionsを指定しない場合、ResponseCode != 200はすべて例外をThrowする。
-			content = response.getContentText("UTF-8");
-		} catch (error) {
-			if (i < 4) {
-				console.error(`${entry.EntryUrl}へのアクセスが失敗しました。`);
-				continue;
-			}
-			else {
-				throw error;
-			}
-		}
-	}
+	const content = customFetch(entry.EntryUrl, 5);
 
 	const imghtmls = Extract(content).Target("PhotoSwipeImage").from("<img").to(">").iterate();
 
@@ -153,19 +134,4 @@ function scrapeEntry(entry: Entry) {
 	}
 
 	console.info(`[${entry.EntryUrl}]から取得した画像は ${numofImage} 枚です。`);
-}
-
-
-// 以下テスト用
-
-export function testScrapingKobushi() {
-	const kobushi = getUnitById(4);
-	const amiFirstEntry = getEntryById(11, 12027493828);
-
-	scrapeEntry(amiFirstEntry);
-	scrapeUnitEntryList(kobushi);
-
-	scrapeNewEntries();
-
-	endofFunction();
 }
