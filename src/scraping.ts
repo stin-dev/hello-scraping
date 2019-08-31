@@ -1,6 +1,6 @@
 import { getAllUnits, Unit, getUnitById } from "./spreadsheet/units";
 import { Blog, getBlogsByUnitId } from "./spreadsheet/blogs";
-import { Parser } from "./utils/Parser";
+import { parse } from "./utils/Parser";
 import { EntryListState } from "./ameba_blog/entrylist";
 import { themeExists, getThemeById, addNewTheme, Theme } from "./spreadsheet/themes";
 import { entryExists, addNewEntry, getNewEntries, Entry, getEntryById } from "./spreadsheet/entries";
@@ -57,7 +57,7 @@ function scrapeBlogEntryList(blog: Blog, nth: number = 1) {
 	console.info(`[${blog.AmebaId}]のEntryListのスクレイピングを実行します。`);
 
 	const content = customFetch(blog.getEntrylistNthUrl(nth), 5);
-	const stateJson = new Parser(content).from("<script>window.INIT_DATA=").to("};", 1).build();
+	const stateJson = parse(content).from("<script>window.INIT_DATA=").to("};", 1).build();
 
 	const entrylistState: EntryListState = JSON.parse(stateJson);
 

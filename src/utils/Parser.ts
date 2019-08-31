@@ -1,13 +1,13 @@
 type fromtoType = { text: string, offset: number };
 
-export class Parser {
+class Parser {
 	private content: string;
-	private direction:"from" | "to";
+	private direction: "from" | "to";
 	private _from: fromtoType;
 	private _to: fromtoType;
-	private index?:number;
-	private log:boolean;
-	private position:number;
+	private index?: number;
+	private log: boolean;
+	private position: number;
 	private end?: number;
 	private last?: number;
 
@@ -83,11 +83,11 @@ export class Parser {
 		return txt.substring(keyword.from, keyword.to);
 	}
 
-	iterate():string[] {
+	iterate(): string[] {
 		var keywords = [];
 		var start = true;
-		
-		while(start || this.last != this.position) {
+
+		while (start || this.last != this.position) {
 			var keyword = this.build();
 			if (this.log) {
 				Logger.log("LastIndexOf: %s", this.last);
@@ -99,7 +99,11 @@ export class Parser {
 			this.index = this.end;
 			keywords.push(keyword);
 			start = false;
-		} 
+		}
 		return keywords;
 	}
+}
+
+export function parse(content: string): Parser {
+	return new Parser(content);
 }
