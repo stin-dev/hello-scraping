@@ -52,9 +52,9 @@ export function scrapeUnitEntryList(unit: Unit, nth = 1) {
  * @param blog 対象Blog
  * @param nth Entrylist-nth.htmlにアクセスする場合指定する。
  */
-function scrapeBlogEntryList(blog: Blog, nth:number = 1) {
+function scrapeBlogEntryList(blog: Blog, nth: number = 1) {
 	console.info(`[${blog.AmebaId}]のEntryListのスクレイピングを実行します。`);
-	
+
 	const response = UrlFetchApp.fetch(blog.getEntrylistNthUrl(nth));
 	const content = response.getContentText("UTF-8");
 	const stateJson = new Parser(content).from("<script>window.INIT_DATA=").to("};", 1).build();
@@ -85,7 +85,7 @@ function scrapeBlogEntryList(blog: Blog, nth:number = 1) {
  */
 export function scrapeNewEntries() {
 	console.info(`取得した新規EntryのImageUrlを取得する処理を開始ます。`);
-	
+
 	const entries = getNewEntries();
 
 	for (let i = 0; i < entries.length; i++) {
@@ -100,8 +100,27 @@ export function scrapeNewEntries() {
 function scrapeEntry(entry: Entry) {
 	console.info(`[${entry.EntryUrl}]の画像を取得します。`);
 
-	const response = UrlFetchApp.fetch(entry.EntryUrl);
-	const content = response.getContentText("UTF-8");
+	let response: GoogleAppsScript.URL_Fetch.HTTPResponse;
+	let content = "";
+	for (let i = 0; i < 5; i++) {
+		try {
+			// UrlFetchApp.fetch()でAddress unavailable errorが発生することがある。
+			// 同じURLに5回http requestを送信して全て失敗したときにプログラムを強制終了する。
+			response = UrlFetchApp.fetch(entry.EntryUrl);
+			
+			// UrlFetchApp.fetch()の仕様でOptionsを指定しない場合、ResponseCode != 200はすべて例外をThrowする。
+			content = response.getContentText("UTF-8");
+		} catch (error) {
+			if (i < 4) {
+				console.error(`${entry.EntryUrl}へのアクセスが失敗しました。`);
+				continue;
+			}
+			else {
+				throw error;
+			}
+		}
+	}
+
 	const imghtmls = Extract(content).Target("PhotoSwipeImage").from("<img").to(">").iterate();
 
 	const wellFormedImghtmls = imghtmls.map(html => {
