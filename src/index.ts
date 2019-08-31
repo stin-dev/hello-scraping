@@ -1,9 +1,14 @@
-import {getUpdatedCalander} from './Code'
+import executeScraping from './scraping';
+import { executeScrapingPastdata } from './pastdata';
 
 declare const global: {
-  [x: string]: any ;
+  [x: string]: any;
 }
 
-global.getUpdatedCalander = function(e: any) {
-  return getUpdatedCalander(e)
+global.executeScraping = function() {
+  return executeScraping();
+}
+
+global.executeScrapingPastdata = function() {
+  return executeScrapingPastdata();
 }
