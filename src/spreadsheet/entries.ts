@@ -155,6 +155,7 @@ export function addNewEntry(
  */
 export function writeEntriesToSheet() {
 	const rowsCount = newEntries.length;
+	console.info(`新規Entry合計 ${rowsCount} 件をSheetに書き込みます。`);
 	if (rowsCount === 0) return;
 
 	const lastRow = entriesSheet.getLastRow();

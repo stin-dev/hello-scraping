@@ -53,6 +53,7 @@ export function addNewImageUrl(
  */
 export function writeImageUrlsToSheet() {
 	const rowsCount = newImageUrls.length;
+	console.info(`新規ImageUrl合計 ${rowsCount} 件をSheetに書き込みます。`);
 	if (rowsCount === 0) return;
 
 	const lastRow = imageurlsSheet.getLastRow();
