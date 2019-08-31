@@ -1,9 +1,9 @@
-import { getAllUnits, Unit, getUnitById } from "./spreadsheet/units";
+import { getAllUnits, Unit } from "./spreadsheet/units";
 import { Blog, getBlogsByUnitId } from "./spreadsheet/blogs";
 import { parse } from "./utils/Parser";
 import { EntryListState } from "./ameba_blog/entrylist";
 import { themeExists, getThemeById, addNewTheme, Theme } from "./spreadsheet/themes";
-import { entryExists, addNewEntry, getNewEntries, Entry, getEntryById } from "./spreadsheet/entries";
+import { entryExists, addNewEntry, getNewEntries, Entry } from "./spreadsheet/entries";
 import { endofFunction } from "./endof_function";
 import Extract from "./utils/StringExtractor";
 import { addNewImageUrl } from "./spreadsheet/imageurls";
