@@ -18,22 +18,28 @@ export default function executeScraping() {
 
 /**
  * 全ユニットの全Blogにアクセスして新規Entryを取得する。
- * @param nth Enntrylist-nth.htmlにアクセスする場合指定する。
+ * @param nth Entrylist-nth.htmlにアクセスする場合指定する。
  */
 export function scrapeEntrylist(nth = 1) {
+	console.info(`Entrylist.htmlから新規Entryを取得する処理を開始します。`);
+
 	const units = getAllUnits();
 
 	for (let i = 0; i < units.length; i++) {
 		scrapeUnitEntryList(units[i], nth);
 	}
+
+	console.info(`新規Entry数は ${getNewEntries().length} 件です。`);
 }
 
 /**
  * 1つのUnitのBlogすべてのEntrylist.htmlにアクセスして新規Entryを取得する。
  * @param unit 対象Unit
- * @param nth Enntrylist-nth.htmlにアクセスする場合指定する。
+ * @param nth Entrylist-nth.htmlにアクセスする場合指定する。
  */
 export function scrapeUnitEntryList(unit: Unit, nth = 1) {
+	console.info(`【${unit.UnitName}】の処理を開始します。`);
+
 	const blogs = getBlogsByUnitId(unit.UnitId);
 
 	for (let i = 0; i < blogs.length; i++) {
@@ -44,9 +50,11 @@ export function scrapeUnitEntryList(unit: Unit, nth = 1) {
 /**
  * 1件のBlogのEntrylist.htmlにアクセスして新規Entryを取得する。
  * @param blog 対象Blog
- * @param nth Enntrylist-nth.htmlにアクセスする場合指定する。
+ * @param nth Entrylist-nth.htmlにアクセスする場合指定する。
  */
 function scrapeBlogEntryList(blog: Blog, nth:number = 1) {
+	console.info(`[${blog.AmebaId}]のEntryListのスクレイピングを実行します。`);
+	
 	const response = UrlFetchApp.fetch(blog.getEntrylistNthUrl(nth));
 	const content = response.getContentText("UTF-8");
 	const stateJson = new Parser(content).from("<script>window.INIT_DATA=").to("};", 1).build();
@@ -76,6 +84,8 @@ function scrapeBlogEntryList(blog: Blog, nth:number = 1) {
  * 新規Entryの各ページにアクセスしてImageUrlを取得する。
  */
 export function scrapeNewEntries() {
+	console.info(`取得した新規EntryのImageUrlを取得する処理を開始ます。`);
+	
 	const entries = getNewEntries();
 
 	for (let i = 0; i < entries.length; i++) {
@@ -88,6 +98,8 @@ export function scrapeNewEntries() {
  * @param entry 対象Entry
  */
 function scrapeEntry(entry: Entry) {
+	console.info(`[${entry.EntryUrl}]の画像を取得します。`);
+
 	const response = UrlFetchApp.fetch(entry.EntryUrl);
 	const content = response.getContentText("UTF-8");
 	const imghtmls = Extract(content).Target("PhotoSwipeImage").from("<img").to(">").iterate();
@@ -101,11 +113,14 @@ function scrapeEntry(entry: Entry) {
 		}
 	});
 
+	let numofImage = 0;
+
 	for (let i = 0; i < wellFormedImghtmls.length; i++) {
 		try {
 			const html = XmlService.parse(wellFormedImghtmls[i]).getRootElement();
 			const image_id = html.getAttribute("data-image-id").getValue();
 			const image_url = html.getAttribute("src").getValue();
+			numofImage++;
 
 			addNewImageUrl(
 				entry.Blog.BlogId,
@@ -117,6 +132,8 @@ function scrapeEntry(entry: Entry) {
 			continue;
 		}
 	}
+
+	console.info(`[${entry.EntryUrl}]から取得した画像は ${numofImage} 枚です。`);
 }
 
 
